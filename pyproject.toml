@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyLibreHardwareMonitor"
-version = "1.0.1"
+version = "1.1.0"
 description = "Python wrapper for LibreHardwareMonitor."
 authors = [
     { name = "jianjun", email = "910667956@qq.com" }
@@ -13,6 +13,7 @@ license = { text = "Mozilla Public License Version 2.0" }
 readme = "README.md"
 requires-python = ">=3.6"
 dependencies = [
+    "rich",
     "PyLibreHardwareMonitorLib",
 ]
 
