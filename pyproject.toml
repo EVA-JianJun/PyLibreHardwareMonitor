@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyLibreHardwareMonitor"
+version = "1.0.0"
+description = "Python wrapper for LibreHardwareMonitor."
+authors = [
+    { name = "jianjun", email = "910667956@qq.com" }
+]
+license = { text = "Mozilla Public License Version 2.0" }
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "PyLibreHardwareMonitorLib",
+]
+
+[project.urls]
+homepage = "https://github.com/EVA-JianJun/PyLibreHardwareMonitor"
+repository = "https://github.com/EVA-JianJun/PyLibreHardwareMonitor"
+
+[tool.setuptools]
+# 指定包的目录
+packages = ["PyLibreHardwareMonitor"]
