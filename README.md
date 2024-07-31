@@ -1,7 +1,7 @@
 # PyLibreHardwareMonitor
 [![LibreHardwareMonitor](https://img.shields.io/badge/LibreHardwareMonitor-All%20Releases-3eb910)](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) [![Windows](https://img.shields.io/badge/Windows-10%20&%2011-blue)]() [![Python](https://img.shields.io/badge/Python-3.6+-e14d43)]()
 
-[【简体中文 readme】](https://github.com/EVA-JianJun/PyLibreHardwareMonitor/master/README.cn.md)
+[简体中文 readme](https://github.com/EVA-JianJun/PyLibreHardwareMonitor/blob/main/README.cn.md)
 
 Python wrapper for [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor), quick access to LibreHardwareMonitorLib's original functionality.
 
