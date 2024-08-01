@@ -5,18 +5,17 @@ import clr
 from PyLibreHardwareMonitorLib import dll
 from rich.console import Console
 
-class Computer():
+class Computer:
 
     def __init__(self,
-            IsCpuEnabled: bool = False,
-            IsGpuEnabled: bool = False,
-            IsMemoryEnabled: bool = False,
-            IsMotherboardEnabled: bool = False,
-            IsControllerEnabled: bool = False,
-            IsNetworkEnabled: bool = False,
-            IsStorageEnabled: bool = False,
-            version: str = "latest",
-        ) -> None:
+                 IsCpuEnabled: bool = False,
+                 IsGpuEnabled: bool = False,
+                 IsMemoryEnabled: bool = False,
+                 IsMotherboardEnabled: bool = False,
+                 IsControllerEnabled: bool = False,
+                 IsNetworkEnabled: bool = False,
+                 IsStorageEnabled: bool = False,
+                 version: str = "latest") -> None:
         """
         init Computer instance.
 
@@ -53,10 +52,11 @@ class Computer():
             self._enable_network = IsNetworkEnabled
             self._enable_storage = IsStorageEnabled
 
+        self._console = Console()
         if self._load_dll():
             self._init_monitor()
 
-    def _load_dll(self) -> None:
+    def _load_dll(self) -> bool:
         """ Load  LibreHardwareMonitorLib """
         try:
             clr.AddReference(dll["HidSharp"].replace('.dll', ''))
@@ -65,7 +65,7 @@ class Computer():
             from LibreHardwareMonitor.Hardware import Computer
             self._Computer = Computer
         except Exception as err:
-            print("PyLibreHardwareMonitor: Load dll err!")
+            self._console.print(f"[bold red blink]PyLibreHardwareMonitor: load dll err![/]")
             traceback.print_exc()
             print(err)
             return False
@@ -74,7 +74,6 @@ class Computer():
 
     def _init_monitor(self) -> None:
         """ Initialize the monitor and refresh the data """
-        console = Console()
         components = [
             ("cpu", self._enable_cpu),
             ("gpu", self._enable_gpu),
@@ -87,9 +86,9 @@ class Computer():
 
         for component_name, is_enabled in components:
             if is_enabled:
-                self._init_component_monitor(component_name, console)
+                self._init_component_monitor(component_name)
 
-    def _init_component_monitor(self, component_name: str, console: Console) -> None:
+    def _init_component_monitor(self, component_name: str) -> None:
         """ Initialize a specific component monitor """
         try:
             monitor = self._Computer()
@@ -98,46 +97,42 @@ class Computer():
             monitor.Open()
             atexit.register(monitor.Close)
         except Exception as err:
-            console.print(f"[bold red blink]{component_name.capitalize()} Error: {err}![/]")
+            self._console.print(f"[bold red blink]{component_name.capitalize()} Error: {err}![/]")
 
     def _update_monitor(self, monitor) -> dict:
         """ Update monitor """
         monitor_info = {}
-        same_name_hardware_dict = {}
-        for hardware in monitor.Hardware:
-            # get hardware_info
-            hardware_info = {}
-            hardware.Update()  # refresh update info
-            for sensor in hardware.Sensors:
-                SensorType = sensor.SensorType.ToString()
-                try:
-                    hardware_info[SensorType]
-                except KeyError:
-                    hardware_info[SensorType] = {}
-                hardware_info[SensorType][sensor.Name] = sensor.Value
+        try:
+            same_name_hardware_dict = {}
+            for hardware in monitor.Hardware:
+                # get hardware_info
+                hardware_info = {}
+                hardware.Update()  # refresh update info
+                for sensor in hardware.Sensors:
+                    SensorType = sensor.SensorType.ToString()
+                    hardware_info.setdefault(SensorType, {})[sensor.Name] = sensor.Value
 
-            # save hardware_info
-            if hardware.Name in same_name_hardware_dict:
-                same_name_hardware_dict[hardware.Name].append(hardware_info)  # save three+
-            else:
-                if hardware.Name in monitor_info:  # hardware name is the same, eg: same type of hard disk
-                    try:
-                        same_name_hardware_dict[hardware.Name]
-                    except KeyError:
-                        same_name_hardware_dict[hardware.Name] = []
-
-                    same_name_hardware_dict[hardware.Name].append(monitor_info[hardware.Name])  # save old
-                    del monitor_info[hardware.Name]  # del old
-                    same_name_hardware_dict[hardware.Name].append(hardware_info)  # save new
+                # save hardware_info
+                if hardware.Name in same_name_hardware_dict:
+                    same_name_hardware_dict[hardware.Name].append(hardware_info)  # save three+
                 else:
-                    monitor_info[hardware.Name] = hardware_info
+                    if hardware.Name in monitor_info:  # hardware name is the same, eg: same type of hard disk
+                        same_name_hardware_dict.setdefault(hardware.Name, []).append(monitor_info.pop(hardware.Name))
+                        same_name_hardware_dict[hardware.Name].append(hardware_info)
+                    else:
+                        monitor_info[hardware.Name] = hardware_info
 
-        # add same hardware info
-        for hardware_name, hardware_info_list in same_name_hardware_dict.items():
-            for index, hardware_info in enumerate(hardware_info_list, start=1):
-                monitor_info[f"{hardware_name}-{index}"] = hardware_info
+            # add same hardware info
+            for hardware_name, hardware_info_list in same_name_hardware_dict.items():
+                for index, hardware_info in enumerate(hardware_info_list, start=1):
+                    monitor_info[f"{hardware_name}-{index}"] = hardware_info
 
-        return monitor_info
+        except Exception as err:
+            self._console.print(f"[bold red blink]PyLibreHardwareMonitor: update monitor err![/]")
+            traceback.print_exc()
+            print(err)
+        finally:
+            return monitor_info
 
     @property
     def cpu(self) -> dict:
