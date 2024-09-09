@@ -1,7 +1,7 @@
+import os
 import atexit
 import traceback
 
-import clr
 from PyLibreHardwareMonitorLib import dll
 from rich.console import Console
 
@@ -59,15 +59,19 @@ class Computer:
     def _load_dll(self) -> bool:
         """ Load  LibreHardwareMonitorLib """
         try:
+            self.load_sucess = False
+            import clr
             clr.AddReference(dll["HidSharp"].replace('.dll', ''))
             clr.AddReference(dll[self.version].replace('.dll', ''))
             self.version = dll['latest_version']
             from LibreHardwareMonitor.Hardware import Computer
             self._Computer = Computer
+            self.load_sucess = True
         except Exception as err:
             self._console.print(f"[bold red blink]PyLibreHardwareMonitor: load dll err![/]")
-            traceback.print_exc()
-            print(err)
+            if os.name == 'nt':
+                traceback.print_exc()
+                print(err)
             return False
         else:
             return True
