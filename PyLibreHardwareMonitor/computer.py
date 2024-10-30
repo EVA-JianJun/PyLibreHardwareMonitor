@@ -1,4 +1,5 @@
 import os
+import time
 import atexit
 import traceback
 
@@ -61,6 +62,10 @@ class Computer:
         try:
             self.load_sucess = False
             import clr
+            try:
+                clr.AddReference
+            except AttributeError:
+                time.sleep(1) # wait 1s to load
             clr.AddReference(dll["HidSharp"].replace('.dll', ''))
             clr.AddReference(dll[self.version].replace('.dll', ''))
             self.version = dll['latest_version']
